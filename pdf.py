@@ -63,13 +63,13 @@ for j in range(len(text)):
         #answer processing
         tossup_answer_and_bonus = question_parts[1].split('BONUS')
         tossup_answer = tossup_answer_and_bonus[0]
+        tossup_answer = tossup_answer.replace('\n', '')
         tossup_answer = tossup_answer[2:]
         question_dict[j]['tossup_answer'] = tossup_answer
 
         #bonus processing
         bonus = tossup_answer_and_bonus[1]
         bonus = bonus.replace('\n', ' ')
-        split_text = category_text + '- ' + question_type
         bonus = bonus.split(category_text)[1]
         bonus = bonus[2:]
         bonus = bonus.replace(question_type, '')
@@ -81,9 +81,16 @@ for j in range(len(text)):
 
         #bonus answer processing
         bonus_answer = question_parts[2]
-        bonus_answer
-        print(question_parts[2])
+        bonus_answer = bonus_answer.replace('\n', ' ')
+        bonus_answer = bonus_answer[2:]
+        bonus_answer = bonus_answer.split(' PROMETHEUS')[0]
+        question_dict[j]['bonus_answer'] = bonus_answer
+    else:
+        question_dict[j]['category'] = 'X-Risk '
+
+
+keys_to_delete = [key for key, value in question_dict.items() if value['category'] == 'Math ' or value['category'] == 'X-Risk ']
+for key in keys_to_delete:
+    del question_dict[key]
 
 print(question_dict)
-# with open('test.json', 'w') as json_file:
-#     json.dump(question_dict, json_file)
