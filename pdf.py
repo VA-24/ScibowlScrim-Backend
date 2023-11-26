@@ -1,14 +1,37 @@
 import PyPDF2
 import re
+from docx2pdf import convert
 import os
+import csv
 import json
-#scibowldb goes until 7694
+
+"""
+cast
+csbl
+dasoni
+dast
+deadbird
+esbot
+lexsci
+lost
+mit
+moose
+mosfet
+nsba
+prometheus
+round share
+sbl
+sbst
+winter + summer
+wsbt
+"""
 
 def add_space_before_substring(s, sub):
     return s.replace(sub, ' ' + sub)
 
-pdfFileObj = open('test.pdf', 'rb')
+files = os.listdir(r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\External Packets\Prometheus')
 
+pdfFileObj = open('test.pdf', 'rb')
 pdfReader = PyPDF2.PdfReader(pdfFileObj)
 
 text = ''
@@ -18,7 +41,7 @@ for pageNum in range(len(pdfReader.pages)):
     text += pageObj.extract_text()
 
 pdfFileObj.close()
-question_dict = {i: {'category': '', 'tossup_type': '', 'tossup_body': '', 'tossup_answer': '', 'bonus_question': '', 'bonus_answer': ''} for i in range(24)}
+question_dict = {i: {'category': '', 'tossup_type': '', 'tossup_question': '', 'tossup_answer': '', 'bonus_type': '', 'bonus_question': '', 'bonus_answer': '', 'parent_packet': 'Prometheus'} for i in range(24)}
 
 keywords = ['TOSS-UP', 'ANSWER:', 'BONUS']
 text = text.split('TOSS-UP')
@@ -58,7 +81,7 @@ for j in range(len(text)):
                 s = add_space_before_substring(s, sub)
             question_body = re.sub(r'\[.*?\] ', '', s)
             question_body = re.sub(r'\[.*?\]', '', question_body)
-            question_dict[j]['tossup_body'] = question_body
+            question_dict[j]['tossup_question'] = question_body
 
         #answer processing
         tossup_answer_and_bonus = question_parts[1].split('BONUS')
@@ -70,8 +93,13 @@ for j in range(len(text)):
         #bonus processing
         bonus = tossup_answer_and_bonus[1]
         bonus = bonus.replace('\n', ' ')
-        bonus = bonus.split(category_text)[1]
-        bonus = bonus[2:]
+        if 'Short Answer' in bonus:
+            bonus_category = 'Short Answer '
+        else:
+            bonus_category = 'Multiple Choice '
+        question_dict[j]['bonus_type'] = bonus_category
+
+        bonus = bonus.split(bonus_category)[1]
         bonus = bonus.replace(question_type, '')
         bonus = re.sub(r'\[.*?\] ', '', bonus)
         bonus = re.sub(r'\[.*?\]', '', bonus)
@@ -85,6 +113,7 @@ for j in range(len(text)):
         bonus_answer = bonus_answer[2:]
         bonus_answer = bonus_answer.split(' PROMETHEUS')[0]
         question_dict[j]['bonus_answer'] = bonus_answer
+
     else:
         question_dict[j]['category'] = 'X-Risk '
 
