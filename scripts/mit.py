@@ -17,7 +17,6 @@ def get_pdf_paths(root_folder):
 
     return pdf_paths
 
-# Replace 'your_root_folder' with the actual path to your 'packet' directory
 root_folder = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\External Packets\MIT'
 
 pdf_paths = get_pdf_paths(root_folder)
