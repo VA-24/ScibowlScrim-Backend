@@ -1,4 +1,5 @@
 import PyPDF2
+import os
 #scibowldb goes until 7694
 
 pdfFileObj = open('test.pdf', 'rb')
@@ -11,7 +12,7 @@ for pageNum in range(len(pdfReader.pages)):
     text += pageObj.extract_text()
 
 pdfFileObj.close()
-question_dict = {i: [] for i in range(1, 25)}
+question_dict = {i: {'category': '', 'tossup_type': '', 'tossup_body': ''} for i in range(24)}
 
 keywords = ['TOSS-UP', 'ANSWER:', 'BONUS']
 text = text.split('TOSS-UP')
@@ -29,11 +30,18 @@ for j in range(len(text)):
         category.pop(0)
         for word in category:
             category_text += word + ' '
+        #print(category_text)
+        question_dict[j]['category'] = category_text
 
         if 'Short Answer' in question[1]:
             question_type = 'Short Answer '
+            question_dict[j]['tossup_type'] = question_type
             question_body = question[1].replace(question_type, '')
-            if category != 'Math':
-                print(question_body)
+            if category_text != 'Math ':
+                question_dict[j]['tossup_body'] = question_body
+                print(j, question_body)
         else:
             question_type = 'Multiple Choice'
+            question_dict[j]['tossup_type'] = question_type
+
+# print(question_dict)
