@@ -42,7 +42,6 @@ with open(csv_file_path, 'w', newline='', encoding='utf-8') as csvfile:
 
 for file in pdf_paths:
 
-    pdfFileObj = open(file, 'rb')
     packet_id = file.split('Packets\MIT')[1][1:]
     packet_id = packet_id.split('round')
     packet_id = packet_id[0][:-1] + ' round ' + packet_id[1].replace('.pdf', '')
