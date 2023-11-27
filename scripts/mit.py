@@ -4,6 +4,7 @@ from docx2pdf import convert
 import os
 import csv
 import json
+import fitz
 
 def add_space_before_substring(s, sub):
     return s.replace(sub, ' ' + sub)
@@ -17,40 +18,42 @@ def get_pdf_paths(root_folder):
 
     return pdf_paths
 
+def extract_text_from_pdf(pdf_path):
+    doc = fitz.open(pdf_path)
+    text = ""
+    for page_num in range(doc.page_count):
+        page = doc[page_num]
+        text += page.get_text()
+    doc.close()
+    return text
+
 root_folder = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\External Packets\MIT'
 
 pdf_paths = get_pdf_paths(root_folder)
-pdf_paths = [pdf_paths[0]]
 
-#
-# csv_file_path = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\prometheus.csv'
-#
-# header = ['category', 'tossup_type', 'tossup_question', 'tossup_answer',
-#               'bonus_type', 'bonus_question', 'bonus_answer', 'parent_packet']
-#
-# with open(csv_file_path, 'w', newline='', encoding='utf-8') as csvfile:
-#     csv_writer = csv.writer(csvfile)
-#     csv_writer.writerow(header)
-#
+csv_file_path = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\mit.csv'
+
+header = ['category', 'tossup_type', 'tossup_question', 'tossup_answer',
+              'bonus_type', 'bonus_question', 'bonus_answer', 'parent_packet']
+
+with open(csv_file_path, 'w', newline='', encoding='utf-8') as csvfile:
+    csv_writer = csv.writer(csvfile)
+    csv_writer.writerow(header)
+
 for file in pdf_paths:
 
     pdfFileObj = open(file, 'rb')
     packet_id = file.split('Packets\MIT')[1][1:]
     packet_id = packet_id.split('round')
     packet_id = packet_id[0][:-1] + ' round ' + packet_id[1].replace('.pdf', '')
-    pdfReader = PyPDF2.PdfReader(pdfFileObj)
 
-    text = ''
+    latex_text = extract_text_from_pdf(file)
 
-    for pageNum in range(len(pdfReader.pages)):
-        pageObj = pdfReader.pages[pageNum]
-        text += pageObj.extract_text()
 
-    pdfFileObj.close()
     question_dict = {i: {'category': '', 'tossup_type': '', 'tossup_question': '', 'tossup_answer': '', 'bonus_type': '', 'bonus_question': '', 'bonus_answer': '', 'parent_packet': f'{packet_id}'} for i in range(24)}
 
     keywords = ['TOSS UP', 'ANSWER:', 'BONUS']
-    text = text.split('TOSS UP')
+    text = latex_text.split('TOSS UP')
     text.pop(0)
 
     for j in range(len(text)):
@@ -81,10 +84,14 @@ for file in pdf_paths:
         if 'Short Answer' in question:
             question_dict[j]['tossup_type'] = 'Short Answer'
             tossup_question = question.replace('Short Answer ', '')
+            tossup_question = re.sub(r'\(.*?\) ', '', tossup_question)
+            tossup_question = re.sub(r'\(.*?\)', '', tossup_question)
             question_dict[j]['tossup_question'] = tossup_question
         elif 'Multiple Choice' in question:
             question_dict[j]['tossup_type'] = 'Multiple Choice'
             tossup_question = question.replace('Multiple Choice ', '')
+            tossup_question = re.sub(r'\(.*?\) ', '', tossup_question)
+            tossup_question = re.sub(r'\(.*?\)', '', tossup_question)
             question_dict[j]['tossup_question'] = tossup_question
 
         tossup_answer_and_bonus = question_parts[1].split('BONUS')
@@ -101,25 +108,19 @@ for file in pdf_paths:
             bonus_type = 'Multiple Choice'
         question_dict[j]['bonus_type'] = bonus_type
 
-        bonus = bonus.split(bonus_type)[1]
-        print(bonus)
-        # bonus = bonus.replace(question_type, '')
-        # bonus = re.sub(r'\[.*?\] ', '', bonus)
-        # bonus = re.sub(r'\[.*?\]', '', bonus)
-        # if bonus[0] == ' ':
-        #     bonus = bonus[1:]
+        bonus = bonus.split(bonus_type + ' ')[1]
+        bonus = re.sub(r'\(.*?\) ', '', bonus)
+        bonus = re.sub(r'\(.*?\)', '', bonus)
+        question_dict[j]['bonus_question'] = bonus
 
+        bonus_answer = question_parts[2][2:].replace('\n', ' ')
+        if 'MIT Science Bowl Invitational' in bonus_answer:
+            bonus_answer = bonus_answer.split(' MIT')[0]
+        question_dict[j]['bonus_answer'] = bonus_answer
 
-
-
-    #
-    #
-    # keys_to_delete = [key for key, value in question_dict.items() if value['category'] == 'Math' or value['category'] == 'X-Risk']
-    # for key in keys_to_delete:
-    #     del question_dict[key]
-    #
-    # for key in question_dict.keys():
-    #     print(question_dict[key].values())
-    #     with open(r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\prometheus.csv', 'a', newline='', encoding='utf-8') as csvfile:
-    #         csv_writer = csv.writer(csvfile)
-    #         csv_writer.writerow(question_dict[key].values())
+    for key in question_dict.keys():
+        values = list(question_dict[key].values())
+        if values[0] != '':
+            with open(r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\mit.csv', 'a', newline='', encoding='utf-8') as csvfile:
+                csv_writer = csv.writer(csvfile, escapechar='\\')
+                csv_writer.writerow(question_dict[key].values())

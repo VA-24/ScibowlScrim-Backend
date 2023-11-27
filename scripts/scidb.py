@@ -7,7 +7,7 @@ base_url = 'https://scibowldb.com/api/questions/'
 # header = ['category', 'tossup_type', 'tossup_question', 'tossup_answer',
 #           'bonus_type', 'bonus_question', 'bonus_answer', 'parent_packet']
 #
-csv_file_path = '../compiled_questions.csv'
+csv_file_path = '../csvs/scidb.csv'
 #
 # with open(csv_file_path, 'w', newline='', encoding='utf-8') as csvfile:
 #     csv_writer = csv.writer(csvfile)

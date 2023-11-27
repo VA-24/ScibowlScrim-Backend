@@ -4,12 +4,31 @@ from docx2pdf import convert
 import os
 import csv
 import json
+import fitz
 
 def add_space_before_substring(s, sub):
     return s.replace(sub, ' ' + sub)
 
+def extract_text_from_pdf(pdf_path):
+    doc = fitz.open(pdf_path)
+    text = ""
+    for page_num in range(doc.page_count):
+        page = doc[page_num]
+        text += page.get_text()
+    doc.close()
+    return text
+
+def get_pdf_paths(root_folder):
+    pdf_paths = []
+    for root, dirs, files in os.walk(root_folder):
+        for file in files:
+            if file.lower().endswith(".pdf"):
+                pdf_paths.append(os.path.join(root, file))
+
+    return pdf_paths
+
 base = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\External Packets\Prometheus'
-files = os.listdir(base)
+pdf_paths = get_pdf_paths(base)
 
 csv_file_path = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\prometheus.csv'
 
@@ -20,24 +39,15 @@ with open(csv_file_path, 'w', newline='', encoding='utf-8') as csvfile:
     csv_writer = csv.writer(csvfile)
     csv_writer.writerow(header)
 
-for file in files:
+for file in pdf_paths:
     path = base + '/' + file
-    pdfFileObj = open(path, 'rb')
     packet_id = file[:-4].replace('_', ' ')
-    pdfReader = PyPDF2.PdfReader(pdfFileObj)
 
-    text = ''
-
-    for pageNum in range(len(pdfReader.pages)):
-        pageObj = pdfReader.pages[pageNum]
-        text += pageObj.extract_text()
-
-    pdfFileObj.close()
-    question_dict = {i: {'category': '', 'tossup_type': '', 'tossup_question': '', 'tossup_answer': '', 'bonus_type': '', 'bonus_question': '', 'bonus_answer': '', 'parent_packet': f'{packet_id}'} for i in range(24)}
-
-    keywords = ['TOSS-UP', 'ANSWER:', 'BONUS']
-    text = text.split('TOSS-UP')
+    latex_text = extract_text_from_pdf(file)
+    text = latex_text.split('TOSS-UP')
     text.pop(0)
+
+    question_dict = {i: {'category': '', 'tossup_type': '', 'tossup_question': '', 'tossup_answer': '', 'bonus_type': '', 'bonus_question': '', 'bonus_answer': '', 'parent_packet': f'{packet_id}'} for i in range(24)}
 
     for j in range(len(text)):
         question_parts = text[j].split('ANSWER')
@@ -112,7 +122,7 @@ for file in files:
             question_dict[j]['category'] = 'X-Risk'
 
 
-    keys_to_delete = [key for key, value in question_dict.items() if value['category'] == 'Math' or value['category'] == 'X-Risk']
+    keys_to_delete = [key for key, value in question_dict.items() if value['category'] == 'X-Risk' or value['category'] == 'Math']
     for key in keys_to_delete:
         del question_dict[key]
 
