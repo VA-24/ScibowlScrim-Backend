@@ -41,7 +41,7 @@ with open(csv_file_path, 'w', newline='', encoding='utf-8') as csvfile:
 
 for file in pdf_paths:
     path = base + '/' + file
-    packet_id = file[:-4].replace('_', ' ')
+    packet_id = file[80:-4].replace('_', ' ')
 
     latex_text = extract_text_from_pdf(file)
     text = latex_text.split('TOSS-UP')
