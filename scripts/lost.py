@@ -35,7 +35,7 @@ root_folder = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\External Pac
 pdf_paths = get_pdf_paths(root_folder)
 pdf_paths = [path for path in pdf_paths if 'Visual' not in path]
 print(pdf_paths)
-csv_file_path = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\lost.csv'
+csv_file_path = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\test.csv'
 
 header = ['category', 'tossup_type', 'tossup_question', 'tossup_answer',
               'bonus_type', 'bonus_question', 'bonus_answer', 'parent_packet']
@@ -174,7 +174,7 @@ for file in pdf_paths:
         for key in question_dict.keys():
             values = list(question_dict[key].values())
             if values[0] != '':
-                with open(r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\lost.csv', 'a', newline='', encoding='utf-8') as csvfile:
+                with open(r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\test.csv', 'a', newline='', encoding='utf-8') as csvfile:
                     csv_writer = csv.writer(csvfile, escapechar='\\')
                     csv_writer.writerow(question_dict[key].values())
     except:

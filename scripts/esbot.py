@@ -33,7 +33,6 @@ def extract_text_from_pdf(pdf_path):
 root_folder = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\External Packets\ESBOT'
 
 pdf_paths = get_pdf_paths(root_folder)
-pdf_paths = [pdf_paths[0]]
 csv_file_path = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\esbot.csv'
 
 header = ['category', 'tossup_type', 'tossup_question', 'tossup_answer',
@@ -57,8 +56,8 @@ for file in pdf_paths:
 
         for j in range(0, len(text) - 1):
             question_parts = text[j].split('ANSWER')
-            question = question_parts[0].replace('\n', '', 1).replace('\n', ' ')
 
+            question = question_parts[0].replace('\n', '', 1).replace('\n', ' ')
             if 'Earth and Space' in question:
                 question_dict[j]['category'] = 'Earth and Space'
                 question = question.split('Earth and Space')
@@ -79,7 +78,6 @@ for file in pdf_paths:
                 question = question.split('Energy')
 
             question = question[1]
-
             if 'Short Answer' in question:
                 question_dict[j]['tossup_type'] = 'Short Answer'
                 tossup_question = question.split('Short Answer: ')[1]
@@ -90,36 +88,43 @@ for file in pdf_paths:
                 question_dict[j]['tossup_answer'] = tossup_question
 
             tossup_answer_and_bonus = question_parts[1].split('Bonus')
+
             tossup_answer = tossup_answer_and_bonus[0]
-            tossup_answer = tossup_answer.replace('\n', '')
             tossup_answer = tossup_answer[2:]
             tossup_answer = re.sub(' +', ' ', tossup_answer.strip())
             question_dict[j]['tossup_answer'] = tossup_answer
 
-            bonus = tossup_answer_and_bonus[1]
-            bonus = bonus.replace('\n', ' ')
-            if 'Short Answer' in bonus:
-                bonus_type = 'Short Answer'
+            if len(tossup_answer_and_bonus) > 1:
+                bonus = tossup_answer_and_bonus[1]
+                bonus = bonus.replace('\n', ' ')
+                if 'Short Answer' in bonus:
+                    bonus_type = 'Short Answer'
+                else:
+                    bonus_type = 'Multiple Choice'
+                question_dict[j]['bonus_type'] = bonus_type
+                bonus = bonus.split(bonus_type)[1]
+                bonus = re.sub(' +', ' ', bonus.strip())
+                bonus = bonus[2:]
+                question_dict[j]['bonus_question'] = bonus
+                question_dict[j]['bonus_type'] = bonus_type
             else:
-                bonus_type = 'Multiple Choice'
-            print(bonus)
-            question_dict[j]['bonus_type'] = bonus_type
-        #
-        #     bonus = bonus.split(bonus_type)[1]
-        #     bonus = bonus.replace('\u200b', '')
-        #     bonus = re.sub(r'\[.*?\] ', '', bonus)
-        #     bonus = re.sub(r'\[.*?\]', '', bonus)
-        #     bonus = re.sub(' +', ' ', bonus.strip())
-        #
-        #
-        #     bonus_answer = question_parts[2][2:].replace('\n', ' ')
-        #     question_dict[j]['bonus_answer'] = bonus_answer
+                bonus = ''
+                bonus_type = ''
+                question_dict[j]['bonus_question'] = bonus
+                question_dict[j]['bonus_type'] = bonus_type
 
-        # for key in question_dict.keys():
-        #     values = list(question_dict[key].values())
-        #     if values[0] != '':
-        #         with open(r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\esbot.csv', 'a', newline='', encoding='utf-8') as csvfile:
-        #             csv_writer = csv.writer(csvfile, escapechar='\\')
-        #             csv_writer.writerow(question_dict[key].values())
+        keys_to_delete = [key for key, value in question_dict.items() if
+                          value['bonus_question'] == '' or value['tossup_question'] == '']
+        for key in keys_to_delete:
+            del question_dict[key]
+
+        for key in question_dict.keys():
+            print(question_dict[key].values())
+            values = list(question_dict[key].values())
+            if values[0] != '':
+                with open(r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\esbot.csv', 'a', newline='', encoding='utf-8') as csvfile:
+                    csv_writer = csv.writer(csvfile, escapechar='\\')
+                    csv_writer.writerow(question_dict[key].values())
     except:
         print('failed for ', file)
+
