@@ -12,7 +12,7 @@ import csv
 
 
 file1_path = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\combined.csv'
-file2_path = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\mit.csv'
+file2_path = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\.csv'
 
 df1 = pd.read_csv(file1_path)
 df2 = pd.read_csv(file2_path)
