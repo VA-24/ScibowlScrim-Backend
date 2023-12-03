@@ -33,6 +33,7 @@ def extract_text_from_pdf(pdf_path):
 root_folder = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\External Packets\NSBA'
 
 pdf_paths = get_pdf_paths(root_folder)
+# pdf_paths = [pdf_paths[0]]
 csv_file_path = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\nsba.csv'
 
 header = ['category', 'tossup_type', 'tossup_question', 'tossup_answer',
@@ -112,6 +113,13 @@ for file in pdf_paths:
             bonus = re.sub(' +', ' ', bonus.strip())
             question_dict[j]['bonus_question'] = bonus
             question_dict[j]['bonus_type'] = bonus_type
+
+            bonus_answer = question_parts[2]
+            bonus_answer = bonus_answer[2:]
+            bonus_answer = bonus_answer.split('\n')[0]
+            bonus_answer = bonus_answer.split('[')[0]
+            bonus_answer = re.sub(' +', ' ', bonus_answer.strip())
+            question_dict[j]['bonus_answer'] = bonus_answer
 
         keys_to_delete = [key for key, value in question_dict.items() if
                           value['category'] == '']

@@ -33,17 +33,19 @@ def extract_text_from_pdf(pdf_path):
 root_folder = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\External Packets\ESBOT'
 
 pdf_paths = get_pdf_paths(root_folder)
-csv_file_path = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\esbot.csv'
-
-header = ['category', 'tossup_type', 'tossup_question', 'tossup_answer',
-              'bonus_type', 'bonus_question', 'bonus_answer', 'parent_packet']
-
-with open(csv_file_path, 'w', newline='', encoding='utf-8') as csvfile:
-    csv_writer = csv.writer(csvfile)
-    csv_writer.writerow(header)
+# pdf_paths = [pdf_paths[1]]
+# csv_file_path = r'C:\Users\va648\PycharmProjects\ScibowlScrim-Backend\csvs\esbot.csv'
+#
+# header = ['category', 'tossup_type', 'tossup_question', 'tossup_answer',
+#               'bonus_type', 'bonus_question', 'bonus_answer', 'parent_packet']
+#
+# with open(csv_file_path, 'w', newline='', encoding='utf-8') as csvfile:
+#     csv_writer = csv.writer(csvfile)
+#     csv_writer.writerow(header)
 
 for file in pdf_paths:
     try:
+        print(file)
         packet_id = 'ESBOT'
 
         latex_text = extract_text_from_pdf(file)
@@ -56,6 +58,7 @@ for file in pdf_paths:
 
         for j in range(0, len(text) - 1):
             question_parts = text[j].split('ANSWER')
+            print(question_parts[-1])
 
             question = question_parts[0].replace('\n', '', 1).replace('\n', ' ')
             if 'Earth and Space' in question:
@@ -113,10 +116,20 @@ for file in pdf_paths:
                 question_dict[j]['bonus_question'] = bonus
                 question_dict[j]['bonus_type'] = bonus_type
 
+
+            bonus_answer = question_parts[-1]
+            bonus_answer = bonus_answer[2:]
+            bonus_answer = bonus_answer.split('\n')[0]
+            bonus_answer = re.sub(' +', ' ', bonus_answer.strip())
+            question_dict[j]['bonus_answer'] = bonus_answer
+
+
         keys_to_delete = [key for key, value in question_dict.items() if
                           value['bonus_question'] == '' or value['tossup_question'] == '']
         for key in keys_to_delete:
             del question_dict[key]
+
+        #print(question_dict)
 
         for key in question_dict.keys():
             print(question_dict[key].values())
